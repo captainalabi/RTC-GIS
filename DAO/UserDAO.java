@@ -8,7 +8,11 @@ package java.com.startcollabo.rtc_gis_data_system.DAO;
 import java.com.startcollabo.rtc_gis_data_system.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,15 +48,62 @@ public class UserDAO {
         }
     }
     
-    public void readUser(){}
+    public static List readUser(){
     
-    public void updateUser(){}
+List <User> userList = new ArrayList<>();        
+    String readSQL = "select * from user";
+    Connection conn = null;
+    Statement stmt = null;
+    try{
+    conn = DatabaseConnection.createAndConnect("user");
+    stmt = conn.createStatement();
     
-    public void deleteUser(){}
-    
-    public static void main(String[] args) {
-        User user = new User("Alabi Bolakale", "12000555", "alabibolakale@start.com", "Alabi88&76");
-        createUser(user);
-        
+    ResultSet rs = stmt.executeQuery(readSQL);
+        while(rs.next()){
+        String fullName = rs.getString(1);
+        String pin = rs.getString(2);
+        String email = rs.getString(3);
+        String password = rs.getString(4);
+    User user = new User(fullName, pin, email, password);    
+    userList.add(user);
+        }
+    }catch(SQLException e){
+        System.out.println(e.getMessage());
+    }    
+    return userList;
     }
+    
+    public static void updateUser(User user){
+    
+    String updateSQL = "update user set full_name = ?, pin = ?, email = ?, password = ? where password = ?";    
+    Connection con = DatabaseConnection.createAndConnect("user");    
+    
+    PreparedStatement pstmt;
+        try {
+            pstmt = con.prepareStatement(updateSQL);
+            
+            pstmt.setString(1, user.getFullNme());
+            pstmt.setString(2, user.getPin());
+            pstmt.setString(3, user.getEmail());
+            pstmt.setString(4, user.getPassWord());
+            pstmt.setString(5, user.getPassWord());
+            
+        pstmt.executeUpdate();            
+        } catch (SQLException ex) {
+            Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    public static void deleteUser(User user){
+    
+    String deleteSQL = "delete from user where password = ?";
+    Connection con = DatabaseConnection.createAndConnect("user");    
+    PreparedStatement pstmt;
+        try{
+        pstmt = con.prepareStatement(deleteSQL);
+        pstmt.setString(1, user.getPassWord());
+        pstmt.executeUpdate();
+        }catch (SQLException ex) {
+            Logger.getLogger(UserDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }    
 }
